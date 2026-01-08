@@ -32,4 +32,6 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
 
     Optional<Participation> findByUser_IdAndGether_Id(Long userId, Long getherId);
     boolean existsByUser_IdAndGether_Id(Long userId, Long getherId);
+
+    long countByGether_Id(Long getherId);
 }

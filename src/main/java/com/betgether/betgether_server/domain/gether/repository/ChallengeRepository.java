@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
     Optional<Challenge> findByGether_Id(Long getherId);
     boolean existsByGether_Id(Long getherId);
+
+    Optional<Challenge> findByGether_IdAndStatus(Long getherId, Challenge.Status status);
 }

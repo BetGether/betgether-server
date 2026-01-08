@@ -18,5 +18,4 @@ public class RankingController {
     public RankingResponse getRanking(@RequestAttribute Long userId){
         return rankingService.getRanking(userId);
     }
-
 }
