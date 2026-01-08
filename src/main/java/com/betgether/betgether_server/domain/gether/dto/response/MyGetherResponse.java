@@ -1,8 +1,7 @@
 package com.betgether.betgether_server.domain.gether.dto.response;
 
 import jakarta.validation.constraints.Positive;
-
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public record MyGetherResponse(
         @Positive(message = "getherId는 양수여야 한다")
@@ -10,6 +9,6 @@ public record MyGetherResponse(
         String title,
         String imageUrl,
         Integer participantCount,
-        LocalDate joinedAt
+        LocalDateTime joinedAt
 ) {
 }
