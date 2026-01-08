@@ -55,8 +55,4 @@ public class Gether extends BaseTimeEntity {
         this.challenge = challenge;
     }
 
-    public void clearChallenge() {
-        this.challenge = null;
-    }
-
 }

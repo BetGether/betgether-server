@@ -1,7 +1,6 @@
 package com.betgether.betgether_server.domain.gether.repository;
 
 import com.betgether.betgether_server.domain.gether.dto.response.GetherDetailResponse;
-import com.betgether.betgether_server.domain.gether.dto.response.GetherJoinResponse;
 import com.betgether.betgether_server.domain.gether.dto.response.GetherSearchResponse;
 import com.betgether.betgether_server.domain.gether.entity.Gether;
 import org.springframework.data.jpa.repository.JpaRepository;

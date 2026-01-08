@@ -73,7 +73,7 @@ public class GetherService {
                 .title(req.title())
                 .description(req.description())
                 .imageUrl(req.imageUrl())
-                .isPublic(req.isPublic() == null ? true : req.isPublic())
+                .isPublic(req.isPublic() == null || req.isPublic())
                 .inviteCode(generateInviteCode()).build();
 
         getherRepository.save(gether);
