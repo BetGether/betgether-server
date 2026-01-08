@@ -19,7 +19,7 @@ public class AuthService {
     @Transactional
     public LoginResponse login(LoginRequest request) {
         String nickname = request.nickname();
-        User user = userRepository.findByNickName(nickname)
+        User user = userRepository.findByNickname(nickname)
                 .orElseGet(()-> userRepository.save(
                                     User.builder().nickname(nickname).point(500).build()));
 
