@@ -17,13 +17,15 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
             g.title,
             g.imageUrl,
             cast(count(p2) as integer),
-            p.joinedAt
+            p.joinedAt,
+            case when c is null then null else concat('', c.status) end
         )
         from Participation p
         join p.gether g
         join g.participations p2
+        left join g.challenge c
         where p.user.id = :userId
-        group by g.id, g.title, g.imageUrl, p.joinedAt
+        group by g.id, g.title, g.imageUrl, p.joinedAt, c.status
         order by p.joinedAt desc
     """)
     List<MyGetherResponse> findMyGethers(@Param("userId") Long userId);

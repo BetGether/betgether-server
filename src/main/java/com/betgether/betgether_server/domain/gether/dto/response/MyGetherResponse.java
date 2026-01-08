@@ -9,6 +9,7 @@ public record MyGetherResponse(
         String title,
         String imageUrl,
         Integer participantCount,
-        LocalDateTime joinedAt
+        LocalDateTime joinedAt,
+        String challengeStatus
 ) {
 }

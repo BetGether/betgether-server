@@ -1,10 +1,11 @@
 package com.betgether.betgether_server.domain.gether.controller;
 
-import com.betgether.betgether_server.domain.gether.dto.response.GetherDetailResponse;
-import com.betgether.betgether_server.domain.gether.dto.response.GetherJoinResponse;
-import com.betgether.betgether_server.domain.gether.dto.response.GetherSearchResponse;
-import com.betgether.betgether_server.domain.gether.dto.response.MyGetherResponse;
+import com.betgether.betgether_server.domain.gether.dto.request.GetherCreateRequest;
+import com.betgether.betgether_server.domain.gether.dto.request.GetherJoinCodeRequest;
+import com.betgether.betgether_server.domain.gether.dto.request.GetherUpdateRequest;
+import com.betgether.betgether_server.domain.gether.dto.response.*;
 import com.betgether.betgether_server.domain.gether.service.GetherService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,4 +45,30 @@ public class GetherController {
     ) {
         return getherService.join(userId, getherId);
     }
+
+    @PostMapping
+    public GetherCreateResponse create (
+            @RequestAttribute("userId") Long userId,
+            @RequestBody @Valid GetherCreateRequest request
+            ) {
+        return getherService.create(userId, request);
+    }
+
+    @PatchMapping("/{getherId}")
+    public GetherUpdateResponse update(
+            @RequestAttribute("userId") Long userId,
+            @PathVariable Long getherId,
+            @RequestBody @Valid GetherUpdateRequest request
+            ) {
+        return getherService.update(userId, getherId, request);
+    }
+
+    @PostMapping("/join")
+    public GetherJoinResponse joinWithCode(
+            @RequestAttribute("userId") Long userId,
+            @RequestBody @Valid GetherJoinCodeRequest request
+    ) {
+        return getherService.joinByInviteCode(userId, request);
+    }
+
 }

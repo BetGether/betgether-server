@@ -11,6 +11,7 @@ public record GetherSearchResponse(
         String description,
         String imageUrl,
         Integer participantCount,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        String challengeTitle
 ) {
 }
