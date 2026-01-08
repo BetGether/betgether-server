@@ -15,12 +15,12 @@ public class User extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 20)
+    @Column(unique = true, nullable = false, length = 20)
     private String nickname;
 
     @Column(nullable = false)
     @Builder.Default
-    private Integer point = 0;
+    private Integer point = 500;
 
     public void addPoint(int amount) {
         this.point += amount;

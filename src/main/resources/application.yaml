@@ -1,3 +1,6 @@
 spring:
   application:
     name: betgether-server
+
+jwt:
+  secret: "kuit6secretkeykuit6secretkeykuit6secretkeykuit6secretkeykuit6secretkey"
