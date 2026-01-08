@@ -1,4 +1,4 @@
-package com.betgether.betgether_server.domain.auth;
+package com.betgether.betgether_server.domain.auth.service;
 
 import com.betgether.betgether_server.domain.auth.dto.request.LoginRequest;
 import com.betgether.betgether_server.domain.auth.dto.response.LoginResponse;
@@ -8,6 +8,8 @@ import com.betgether.betgether_server.global.jwt.JwtProvider;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import static java.time.LocalDateTime.*;
 
 @Service
 @RequiredArgsConstructor
@@ -21,8 +23,15 @@ public class AuthService {
         String nickname = request.nickname();
         User user = userRepository.findByNickname(nickname)
                 .orElseGet(()-> userRepository.save(
-                                    User.builder().nickname(nickname).point(500).build()));
-
+                                    User.builder()
+                                            .nickname(nickname)
+                                            .point(500)
+                                            .lastLogin(now())
+                                            .build()));
+        if (user.isFirstLoginToday(now())) {
+            user.addPoint(50);
+        }
+        user.updateLastLogin(now());
         String accessToken = jwtProvider.generateAccessToken(user.getId(), nickname);
         return LoginResponse.from(user, accessToken);
     }

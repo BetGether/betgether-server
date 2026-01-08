@@ -7,6 +7,8 @@ public record GetherDetailResponse(
         String imageUrl,
         Boolean isHost,
         String inviteCode,
-        Integer participantCount
+        Integer participantCount,
+        String challengeTitle,
+        Integer challengeBetPoint
 ) {
 }

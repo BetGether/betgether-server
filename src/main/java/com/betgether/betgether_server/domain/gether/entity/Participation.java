@@ -14,6 +14,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @EntityListeners(AuditingEntityListener.class) // 엔티티가 생성되거나 수정될 때마다 시간(생성일, 수정일)이나 사람(생성자, 수정자) 정보를 자동으로 기록해 주는 리스너 역할
+@Table(uniqueConstraints = { // 동시 요청 2번 중복 row 방지
+        @UniqueConstraint(name = "uk_participation_user_gether", columnNames = {"user_id", "gether_id"})
+    }
+)
 public class Participation {
 
     @Id

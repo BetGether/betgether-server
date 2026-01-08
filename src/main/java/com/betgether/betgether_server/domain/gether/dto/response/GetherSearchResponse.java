@@ -2,7 +2,7 @@ package com.betgether.betgether_server.domain.gether.dto.response;
 
 import jakarta.validation.constraints.Positive;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public record GetherSearchResponse(
         @Positive
@@ -11,6 +11,7 @@ public record GetherSearchResponse(
         String description,
         String imageUrl,
         Integer participantCount,
-        LocalDate createdAt
+        LocalDateTime createdAt,
+        String challengeTitle
 ) {
 }

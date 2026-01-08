@@ -4,6 +4,8 @@ import com.betgether.betgether_server.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -22,7 +24,18 @@ public class User extends BaseTimeEntity {
     @Builder.Default
     private Integer point = 500;
 
+    @Column
+    private LocalDateTime lastLogin;
+
     public void addPoint(int amount) {
         this.point += amount;
+    }
+
+    public boolean isFirstLoginToday(LocalDateTime now) {
+        return this.lastLogin == null || !this.lastLogin.toLocalDate().isEqual(now.toLocalDate());
+    }
+
+    public void updateLastLogin(LocalDateTime now) {
+        this.lastLogin = now;
     }
 }

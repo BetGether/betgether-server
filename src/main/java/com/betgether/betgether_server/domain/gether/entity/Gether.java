@@ -41,11 +41,18 @@ public class Gether extends BaseTimeEntity {
     @Builder.Default
     private List<Participation> participations = new ArrayList<>();
 
+    @OneToOne(mappedBy = "gether", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private Challenge challenge;
+
     public void update(String title, String description, String imageUrl, Boolean isPublic) {
         this.title = title;
         this.description = description;
         this.imageUrl = imageUrl;
         this.isPublic = isPublic;
+    }
+
+    public void setChallenge(Challenge challenge) {
+        this.challenge = challenge;
     }
 
 }
