@@ -1,6 +1,7 @@
 package com.betgether.betgether_server.domain.verification.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
         uniqueConstraints = {
                 @UniqueConstraint(name = "uk_verify_session_token", columnNames = "token")
         })
+@Getter
 public class VerifySession {
 
     @Id
@@ -61,11 +63,4 @@ public class VerifySession {
 
     public boolean isActive() { return "ACTIVE".equals(this.status); }
 
-    public Long getId() { return id; }
-    public Long getHostUserId() { return hostUserId; }
-    public Long getGetherId() { return getherId; }
-    public String getToken() { return token; }
-    public int getBetPoint() { return betPoint; }
-    public String getStatus() { return status; }
-    public LocalDateTime getExpiredAt() { return expiredAt; }
 }

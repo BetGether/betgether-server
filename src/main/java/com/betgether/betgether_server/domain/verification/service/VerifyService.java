@@ -13,7 +13,6 @@ import com.betgether.betgether_server.domain.verification.entity.VerificationLog
 import com.betgether.betgether_server.domain.verification.entity.VerifySession;
 import com.betgether.betgether_server.domain.verification.repository.VerificationLogRepository;
 import com.betgether.betgether_server.domain.verification.repository.VerificationSessionRepository;
-import com.betgether.betgether_server.global.jwt.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -93,10 +92,6 @@ public class VerifyService {
             throw new IllegalStateException("이미 인증을 완료했습니다.");
         }
 
-        // 포인트 지급
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        user.addPoint(challenge.getBetPoint());
 
         // 인증 인원 증가
         challenge.increaseInCount();
@@ -111,8 +106,7 @@ public class VerifyService {
 
         return new VerifyScanResponse(
                 "인증 성공!",
-                challenge.getBetPoint(),
-                user.getPoint()
+                challenge.getBetPoint(), 1300
         );
     }
 

@@ -30,7 +30,12 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
     """)
     List<MyGetherResponse> findMyGethers(@Param("userId") Long userId);
 
-    Optional<Participation> findByUser_IdAndGether_Id(Long userId, Long getherId);
+    @Query("""
+        select p.user.id
+        from Participation p 
+        where p.gether.id = :getherId
+    """)
+    List<Long> findUserIdsByGetherId(@Param("getherId") Long getherId);
     boolean existsByUser_IdAndGether_Id(Long userId, Long getherId);
 
     long countByGether_Id(Long getherId);
