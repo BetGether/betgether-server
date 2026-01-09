@@ -24,3 +24,4 @@ Slice<ChatMessage> findChatHistory(@Param("getherId") Long getherId,
 * Slice 인터페이스 활용
 
   * 전체 데이터 개수를 세는 Count 쿼리를 생략하고, "다음 페이지 존재 여부"만 판단하는 Slice를 사용하여 무한 스크롤 환경에 최적화된 성능을 구현했습니다.
+---
