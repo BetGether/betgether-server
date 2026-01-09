@@ -40,7 +40,7 @@ public interface GetherRepository extends JpaRepository<Gether, Long> {
             g.description,
             g.imageUrl,
             case when g.host.id = :userId then true else false end,
-            case when g.host.id = :userId then g.inviteCode else null end,
+            g.inviteCode,
             cast(count(p) as integer),
             c.title,
             c.betPoint
@@ -50,7 +50,7 @@ public interface GetherRepository extends JpaRepository<Gether, Long> {
         left join g.challenge c
         where g.id = :getherId
         group by g.id, g.title, g.description, g.imageUrl, g.host.id, g.inviteCode, c.title, c.betPoint
-    """)
+        """)
     Optional<GetherDetailResponse> findDetail(@Param("getherId") Long getherId,
                                               @Param("userId") Long userId);
 
