@@ -11,20 +11,30 @@ import java.util.List;
 public interface ParticipationRepository extends JpaRepository<Participation, Long> {
 
     @Query("""
-        select new com.betgether.betgether_server.domain.gether.dto.response.MyGetherResponse(
-            g.id,
-            g.title,
-            g.imageUrl,
-            (select cast(count(p3) as integer) from Participation p3 where p3.gether = g),
-            p.joinedAt,
-            case when c is null then null else concat('', c.status) end
-        )
-        from Participation p
-        join p.gether g
-        left join g.challenge c
-        where p.user.id = :userId
-        order by p.joinedAt desc
-    """)
+    select new com.betgether.betgether_server.domain.gether.dto.response.MyGetherResponse(
+        g.id,
+        g.title,
+        g.imageUrl,
+        (select cast(count(p3) as integer) from Participation p3 where p3.gether = g),
+        p.joinedAt,
+        case 
+            when c is null then null
+            when exists (
+                select 1
+                from VerificationSession s
+                where s.challenge = c
+                  and s.status = 'ACTIVE'
+                  and s.expiredAt > CURRENT_TIMESTAMP
+            ) then 'OPEN'
+            else 'CLOSED'
+        end
+    )
+    from Participation p
+    join p.gether g
+    left join g.challenge c
+    where p.user.id = :userId
+    order by p.joinedAt desc
+""")
     List<MyGetherResponse> findMyGethers(@Param("userId") Long userId);
 
     @Query("""
