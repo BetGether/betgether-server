@@ -1,5 +1,7 @@
 package com.betgether.betgether_server.domain.gether.dto.response;
 
+import java.time.LocalDateTime;
+
 public record GetherDetailResponse(
         Long getherId,
         String title,
@@ -9,6 +11,7 @@ public record GetherDetailResponse(
         String inviteCode,
         Integer participantCount,
         String challengeTitle,
-        Integer challengeBetPoint
+        Integer challengeBetPoint,
+        LocalDateTime createdAt
 ) {
 }

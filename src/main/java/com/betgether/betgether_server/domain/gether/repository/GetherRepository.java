@@ -43,7 +43,8 @@ public interface GetherRepository extends JpaRepository<Gether, Long> {
             g.inviteCode,
             cast(count(p) as integer),
             c.title,
-            c.betPoint
+            c.betPoint,
+            g.createdAt
         )
         from Gether g
         left join g.participations p
