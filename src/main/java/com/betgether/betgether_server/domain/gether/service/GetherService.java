@@ -95,7 +95,6 @@ public class GetherService {
                 .title(req.challenge().title())
                 .betPoint(req.challenge().betPoint())
                 .status(Challenge.Status.CLOSED)
-                .inCount(1)
                 .build();
 
         challengeRepository.save(ch);

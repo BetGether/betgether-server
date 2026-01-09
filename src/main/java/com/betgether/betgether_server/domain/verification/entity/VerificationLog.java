@@ -30,11 +30,7 @@ public class VerificationLog {
     @Column(name = "session_id", nullable = false)
     private Long sessionId;
 
-    @Column(name = "point_earned", nullable = false)
-    private int pointEarned;
 
     @Column(name = "verified_at", nullable = false)
     private LocalDateTime verifiedAt;
-
-    public int getPointEarned() { return pointEarned; }
 }

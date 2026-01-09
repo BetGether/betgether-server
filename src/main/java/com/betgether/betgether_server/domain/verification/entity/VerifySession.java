@@ -1,5 +1,6 @@
 package com.betgether.betgether_server.domain.verification.entity;
 
+import com.betgether.betgether_server.domain.gether.entity.Challenge;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,7 +20,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class VerifySession {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -45,6 +45,10 @@ public class VerifySession {
     @Column(name = "expired_at", nullable = false)
     private LocalDateTime expiredAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "challenge_id", nullable = false)
+    private Challenge challenge;
+
     public boolean isExpired(LocalDateTime now) {
         return now.isAfter(expiredAt);
     }
@@ -53,4 +57,5 @@ public class VerifySession {
 
     public boolean isActive() { return "ACTIVE".equals(this.status); }
 
+    public void markClosed() { this.status = "CLOSED"; }
 }

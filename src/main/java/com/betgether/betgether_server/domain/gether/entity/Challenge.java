@@ -20,7 +20,7 @@ public class Challenge {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "gether_id", nullable = false)
+    @JoinColumn(name = "gether_id", nullable = false, unique = true)
     private Gether gether;
 
     @Column(nullable = false, length = 20)
@@ -33,10 +33,6 @@ public class Challenge {
     @Column(nullable = false, length = 5)
     @Builder.Default
     private Status status = Status.CLOSED;
-
-    @Column(name = "in_count", nullable = false)
-    @Builder.Default
-    private Integer inCount = 0;
 
     @CreatedDate
     @Column(updatable = false)
@@ -51,14 +47,4 @@ public class Challenge {
         if (betPoint != null) this.betPoint = betPoint;
         if (status != null) this.status = status;
     }
-
-    public void increaseInCount() {
-        this.inCount = (this.inCount == null ? 0 : this.inCount) + 1;
-    }
-
-    public void decreaseInCount() {
-        int cur = (this.inCount == null ? 0 : this.inCount);
-        this.inCount = Math.max(0, cur - 1);
-    }
-
 }

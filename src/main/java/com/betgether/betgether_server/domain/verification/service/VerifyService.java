@@ -2,7 +2,6 @@ package com.betgether.betgether_server.domain.verification.service;
 
 import com.betgether.betgether_server.domain.gether.entity.Challenge;
 import com.betgether.betgether_server.domain.gether.entity.Gether;
-import com.betgether.betgether_server.domain.gether.entity.Participation;
 import com.betgether.betgether_server.domain.gether.repository.ChallengeRepository;
 import com.betgether.betgether_server.domain.gether.repository.GetherRepository;
 import com.betgether.betgether_server.domain.gether.repository.ParticipationRepository;
@@ -10,19 +9,24 @@ import com.betgether.betgether_server.domain.user.entity.User;
 import com.betgether.betgether_server.domain.user.respository.UserRepository;
 import com.betgether.betgether_server.domain.verification.dto.response.VerifyScanResponse;
 import com.betgether.betgether_server.domain.verification.dto.response.VerifyStartHostResponse;
+import com.betgether.betgether_server.domain.verification.entity.PointTransaction;
 import com.betgether.betgether_server.domain.verification.entity.VerificationLog;
 import com.betgether.betgether_server.domain.verification.entity.VerifySession;
+import com.betgether.betgether_server.domain.verification.repository.PointTransactionRepository;
 import com.betgether.betgether_server.domain.verification.repository.VerificationLogRepository;
 import com.betgether.betgether_server.domain.verification.repository.VerificationSessionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +39,7 @@ public class VerifyService {
     private final ChallengeRepository challengeRepository;
 
     private static final int bonusPoint = 50;
+    private final PointTransactionRepository pointTransactionRepository;
 
     @Transactional
     public VerifyStartHostResponse start(Long getherId, Long hostUserId) {
@@ -44,27 +49,53 @@ public class VerifyService {
             throw new IllegalStateException("방장만 인증을 시작할 수 있음.");
         }
 
+        Challenge challenge = challengeRepository
+                .findByGether_IdAndStatus(getherId, Challenge.Status.OPEN)
+                .orElseThrow(() -> new IllegalStateException("진행 중인 챌린지가 없습니다."));
+
         sessionRepository.findFirstByGetherIdAndStatusOrderByCreatedAtDesc(getherId, "ACTIVE")
                 .ifPresent(active -> {
                     throw new IllegalStateException("이미 진행중인 인증 세션 존재");
                 });
 
-        // OPEN 상태의 챌린지 조회
-        Challenge challenge = challengeRepository
-                .findByGether_IdAndStatus(getherId, Challenge.Status.OPEN)
-                .orElseThrow(() -> new IllegalStateException("진행 중인 세션 없습니다."));
-
-        // OPEN 인데 expiredAt 넘었으면 정산중일수도 -> CLOSED로 바꾸고 세션 생성
-
-        List<Participation>
-        int betPoint = challenge.getBetPoint();
+//        int betPoint = challenge.getBetPoint();
+        int betPoint = 50; // 배팅금 50 일단 고정
 
         String token = generateToken();
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime expiredAt = now.plusMinutes(3);
 
-        VerifySession session = new VerifySession(hostUserId, getherId, token, betPoint, now, expiredAt);
+        VerifySession session = VerifySession.builder()
+                .hostUserId(hostUserId)
+                .getherId(getherId)
+                .token(token)
+                .betPoint(betPoint)
+                .status("ACTIVE")
+                .createdAt(now)
+                .expiredAt(expiredAt)
+                .build();
+
         sessionRepository.save(session);
+        List<Long> memberIds = participationRepository.findUser_IdsByGether_Id(getherId);
+
+        if (memberIds.isEmpty()) {
+            throw new IllegalStateException("게더 멤버가 없읍니다.");
+        }
+
+        List<User> members = userRepository.findAllByIdInForUpdate(memberIds);
+
+
+        List<PointTransaction> debits = members.stream().map(u -> {
+            u.addPoint(-betPoint);
+            return PointTransaction.builder()
+                    .type(PointTransaction.Type.BET)
+                    .amount(-betPoint)
+                    .session(session)
+                    .user(u)
+                    .build();
+        }).collect(Collectors.toList());
+        userRepository.saveAll(members);
+        pointTransactionRepository.saveAll(debits);
 
         return new VerifyStartHostResponse(token, expiredAt);
     }
@@ -98,28 +129,103 @@ public class VerifyService {
         // 중복 인증 방지 + 로그 저장
         try {
             logRepository.save(
-                    new VerificationLog(userId, session.getId(), challenge.getBetPoint())
+                    VerificationLog.builder()
+                            .userId(userId)
+                            .sessionId(session.getId())
+                            .build()
             );
         } catch (DataIntegrityViolationException e) {
             throw new IllegalStateException("이미 인증을 완료했습니다.");
         }
 
-
-        // 인증 인원 증가
-        challenge.increaseInCount();
-
-        // 전체 게더 인원 수 조회
         long totalMemberCount = participationRepository.countByGether_Id(getherId);
+        long successCount = logRepository.countDistinctUserIdBySessionId(session.getId());
 
-        // 모두 인증 완료 → 챌린지 종료
-        if (challenge.getInCount() >= totalMemberCount) {
-            challenge.update(null, null, Challenge.Status.CLOSED);
+        //방장 항상 포함
+        if (session.getHostUserId() != null && !logRepository.existsBySessionIdAndUserId(session.getId(), session.getHostUserId())) {
+            successCount += 1;
+        }
+        // 모두 인증 완료 → 세션 바로 정산
+        if (successCount >= totalMemberCount) {
+            settleSession(session, challenge);
         }
 
+        int currentPoint = userRepository.findById(userId)
+                .map(User::getPoint)
+                .orElse(0);
         return new VerifyScanResponse(
                 "인증 성공!",
-                challenge.getBetPoint(), 1300
+                session.getBetPoint(),
+                currentPoint
         );
+    }
+
+    @Scheduled(fixedDelay = 10000)
+    @Transactional
+    public void settleExpiredSessions() {
+        List<VerifySession> expiredSessions = sessionRepository.findExpiredActiveSessions(LocalDateTime.now());
+        for (VerifySession session : expiredSessions) {
+            session.markClosed();
+
+            Challenge challenge = challengeRepository
+                    .findByGether_IdAndStatus(session.getGetherId(), Challenge.Status.OPEN)
+                    .orElseThrow(() -> new IllegalArgumentException("진행중인 챌린지 없음"));
+
+            settleSession(session, challenge);
+        }
+    }
+
+    private void settleSession(VerifySession session, Challenge challenge) {
+        //중복 호출 방지
+        if (!session.isActive()) {
+            throw new IllegalStateException("이미 종료된 세션");
+        }
+
+        session.markClosed();
+
+        int betPoint = session.getBetPoint();
+        long totalMemberCount = participationRepository.countByGether_Id(session.getGetherId());
+
+        // scan 한 유저 목록
+        List<Long> successUserIds = logRepository.findUser_IdsBySession_Id(session.getId());
+
+        if (successUserIds != null && session.getHostUserId() != null && !successUserIds.contains(session.getHostUserId())) {
+            successUserIds = new ArrayList<>(successUserIds);
+            successUserIds.add(session.getHostUserId());
+        }
+
+        if (successUserIds == null) {
+            successUserIds = List.of(session.getHostUserId());
+        }
+
+        List<Long> winners = successUserIds.stream().distinct().sorted().toList();
+        List<User> users = userRepository.findAllByIdInForUpdate(winners);
+
+        long totalPoint = totalMemberCount * betPoint;
+        int winnerCount = users.size();
+
+        if (winnerCount == 0) {
+            challenge.update(null, null, Challenge.Status.CLOSED);
+        }
+        long base = totalPoint / winnerCount;
+
+        boolean allParticipated = (winnerCount == totalMemberCount);
+        int bonus = allParticipated ? bonusPoint : 0;
+        List<PointTransaction> credits = users.stream().map(u -> {
+            long payout = base + bonus;
+            u.addPoint((int) payout);
+            return PointTransaction.builder()
+                    .type(PointTransaction.Type.SETTLED)
+                    .amount((int) payout)
+                    .session(session)
+                    .user(u)
+                    .build();
+        }).collect(Collectors.toList());
+
+        userRepository.saveAll(users);
+        pointTransactionRepository.saveAll(credits);
+
+        challenge.update(null, null, Challenge.Status.CLOSED);
     }
 
     private static String generateToken() {
