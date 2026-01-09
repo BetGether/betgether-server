@@ -18,13 +18,13 @@ public class RankingService {
 
     public RankingResponse getRanking(Long userId) {
         List<RankingItemResponse> all = userRepository.findTopRanking(20).stream()
-                .map(v -> new RankingItemResponse(v.getRank(), v.getNickName(), v.getPoint()))
+                .map(v -> new RankingItemResponse(v.getRnk(), v.getNickName(), v.getPoint()))
                 .toList();
 
         List<RankingItemResponse> top3 = all.stream().limit(3).toList();
 
         RankingItemView myView = userRepository.findMyRanking(userId);
-        RankingItemResponse my = (myView == null) ? null : new RankingItemResponse(myView.getRank(), myView.getNickName(), myView.getPoint());
+        RankingItemResponse my = (myView == null) ? null : new RankingItemResponse(myView.getRnk(), myView.getNickName(), myView.getPoint());
 
         return new RankingResponse(top3, all, my);
     }
