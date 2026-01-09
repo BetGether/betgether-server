@@ -23,19 +23,36 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOriginPatterns("*") // 모든 도메인을 허용 (패턴 기반)
-                .allowedMethods("*")
+                // 패턴 기반 허용을 사용하되, 보안과 디버깅을 위해 로컬과 버셀 주소는 주석으로라도 명시해두는 것이 정석입니다.
+                .allowedOriginPatterns(
+                        "http://localhost:3000",
+                        "http://localhost:5173",
+                        "https://betgether-api.shop",
+                        "https://www.betgether-api.shop",
+                        "https://betgether-client.vercel.app"
+                )
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                 .allowedHeaders("*")
-                .allowCredentials(true);
+                .allowCredentials(true)
+                .maxAge(3600);
+    }
 
+//    @Override
+//    public void addCorsMappings(CorsRegistry registry) {
 //        registry.addMapping("/**")
-//                .allowedOrigins(
-//                        "http://localhost:3000",
-//                        "http://localhost:5173",
-//                        "https://betgether-client.vercel.app"
-//                )
-//                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
+//                .allowedOriginPatterns("*") // 모든 도메인을 허용 (패턴 기반)
+//                .allowedMethods("*")
 //                .allowedHeaders("*")
 //                .allowCredentials(true);
-    }
+//
+////        registry.addMapping("/**")
+////                .allowedOrigins(
+////                        "http://localhost:3000",
+////                        "http://localhost:5173",
+////                        "https://betgether-client.vercel.app"
+////                )
+////                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
+////                .allowedHeaders("*")
+////                .allowCredentials(true);
+//    }
 }
