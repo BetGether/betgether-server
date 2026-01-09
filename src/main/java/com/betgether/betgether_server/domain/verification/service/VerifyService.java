@@ -1,5 +1,9 @@
 package com.betgether.betgether_server.domain.verification.service;
 
+import com.betgether.betgether_server.domain.chat.dto.request.ChatSendRequest;
+import com.betgether.betgether_server.domain.chat.dto.response.ChatSendResponse;
+import com.betgether.betgether_server.domain.chat.entity.ChatType;
+import com.betgether.betgether_server.domain.chat.service.ChatService;
 import com.betgether.betgether_server.domain.gether.entity.Challenge;
 import com.betgether.betgether_server.domain.gether.entity.ChallengeStatus;
 import com.betgether.betgether_server.domain.gether.entity.Gether;
@@ -19,6 +23,7 @@ import com.betgether.betgether_server.domain.verification.repository.Verificatio
 import com.betgether.betgether_server.domain.verification.repository.VerificationSessionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +44,9 @@ public class VerifyService {
     private final GetherRepository getherRepository;
     private final ParticipationRepository participationRepository;
     private final ChallengeRepository challengeRepository;
+
+    private final SimpMessagingTemplate messagingTemplate;
+    private final ChatService chatService;
 
     private static final int bonusPoint = 50;
     private final PointTransactionRepository pointTransactionRepository;
@@ -101,6 +109,10 @@ public class VerifyService {
         userRepository.saveAll(members);
         pointTransactionRepository.saveAll(debits);
 
+
+        //TODO : ChatController 호출
+        ChatSendResponse response = chatService.saveMessage(getherId, new ChatSendRequest(getherId, "", ChatType.VERIFY_START, hostUserId), hostUserId);
+        messagingTemplate.convertAndSend("/sub/chat/room/" + getherId, response);
         return new VerifyStartHostResponse(token, expiredAt);
     }
 
