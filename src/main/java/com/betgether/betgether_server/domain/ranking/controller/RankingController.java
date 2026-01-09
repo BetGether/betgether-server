@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/ranking")
+@RequestMapping("/api/rankings")
 public class RankingController {
     private final RankingService rankingService;
 
