@@ -377,3 +377,12 @@ Slice<ChatMessage> findChatHistory(@Param("getherId") Long getherId,
           pointTransactionRepository.saveAll(credits);
 ```
 
+---
+# 개선사항
+## GlobalExceptionHanlder의 부재
+* 개발 초기, 개발 속도에만 집중하다보니 Exception Handler를 따로 만들지 않고 예외를 throw하면서 진행하였습니다.
+* 개발 볼륨이 커지면서 점점 예외 처리 분기가 많아졌고 이를 구분해야할 필요가 생겼습니다.
+* 하지만 모두 같은 500 server Error로만 보여 정확히 무슨 에러인지 확인하는데에 어려움이 생겼습니다.
+* 추가로 로컬 환경이 아니라 배포 환경으로 진행될수록 에러 확인이 더욱 힘들어졌고 개발 속도에도 큰 영향이 있었습니다
+
+* 추후에 같은 상황이라면 global exception handler와 custom exception code 도입을 적극 추진해야할 필요성을 느꼈습니다.
