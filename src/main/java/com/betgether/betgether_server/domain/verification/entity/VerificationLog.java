@@ -1,6 +1,9 @@
 package com.betgether.betgether_server.domain.verification.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -13,6 +16,11 @@ import java.time.LocalDateTime;
                 @Index(name = "idx_verification_log_user", columnList = "user_id"),
                 @Index(name = "idx_verification_log_session", columnList = "session_id")
         })
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
+@EntityListeners(AuditingEntityListener.class)
 public class VerificationLog {
 
     @Id
@@ -25,20 +33,7 @@ public class VerificationLog {
     @Column(name = "session_id", nullable = false)
     private Long sessionId;
 
-    @Column(name = "point_earned", nullable = false)
-    private int pointEarned;
-
-    @Column(name = "verified_at", nullable = false)
+    @CreatedDate
+    @Column(name = "verified_at", updatable = false, nullable = false)
     private LocalDateTime verifiedAt;
-
-    protected VerificationLog() {}
-
-    public VerificationLog(Long userId, Long sessionId, int pointEarned) {
-        this.userId = userId;
-        this.sessionId = sessionId;
-        this.pointEarned = pointEarned;
-        this.verifiedAt = LocalDateTime.now();
-    }
-
-    public int getPointEarned() { return pointEarned; }
 }

@@ -45,14 +45,15 @@ public class Gether extends BaseTimeEntity {
     private Challenge challenge;
 
     public void update(String title, String description, String imageUrl, Boolean isPublic) {
-        this.title = title;
-        this.description = description;
-        this.imageUrl = imageUrl;
-        this.isPublic = isPublic;
+        if (title != null) this.title = title;
+        if (description != null) this.description = description;
+        if (imageUrl != null) this.imageUrl = imageUrl;
+        if (isPublic != null) this.isPublic = isPublic;
     }
 
     public void setChallenge(Challenge challenge) {
         this.challenge = challenge;
+        if(challenge != null) challenge.setGether(this);
     }
 
 }

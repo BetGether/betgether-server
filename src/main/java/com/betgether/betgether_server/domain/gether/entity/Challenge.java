@@ -20,7 +20,7 @@ public class Challenge {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "gether_id", nullable = false)
+    @JoinColumn(name = "gether_id", nullable = false, unique = true)
     private Gether gether;
 
     @Column(nullable = false, length = 20)
@@ -30,35 +30,21 @@ public class Challenge {
     private Integer betPoint;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 5)
+    @Column(nullable = false, length = 10)
     @Builder.Default
-    private Status status = Status.CLOSED;
-
-    @Column(name = "in_count", nullable = false)
-    @Builder.Default
-    private Integer inCount = 0;
+    private ChallengeStatus status = ChallengeStatus.CLOSED;
 
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    public enum Status {
-        OPEN, CLOSED
-    }
-
-    public void update(String title, Integer betPoint, Status status) {
+    public void update(String title, Integer betPoint, ChallengeStatus status) {
         if (title != null) this.title = title;
         if (betPoint != null) this.betPoint = betPoint;
         if (status != null) this.status = status;
     }
 
-    public void increaseInCount() {
-        this.inCount = (this.inCount == null ? 0 : this.inCount) + 1;
+    public void setGether(Gether gether) {
+        this.gether = gether;
     }
-
-    public void decreaseInCount() {
-        int cur = (this.inCount == null ? 0 : this.inCount);
-        this.inCount = Math.max(0, cur - 1);
-    }
-
 }

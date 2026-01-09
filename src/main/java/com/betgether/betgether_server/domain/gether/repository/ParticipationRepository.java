@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface ParticipationRepository extends JpaRepository<Participation, Long> {
 
@@ -16,16 +15,14 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
             g.id,
             g.title,
             g.imageUrl,
-            cast(count(p2) as integer),
+            (select cast(count(p3) as integer) from Participation p3 where p3.gether = g),
             p.joinedAt,
             case when c is null then null else concat('', c.status) end
         )
         from Participation p
         join p.gether g
-        join g.participations p2
         left join g.challenge c
         where p.user.id = :userId
-        group by g.id, g.title, g.imageUrl, p.joinedAt, c.status
         order by p.joinedAt desc
     """)
     List<MyGetherResponse> findMyGethers(@Param("userId") Long userId);
