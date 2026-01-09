@@ -7,7 +7,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "verify_session",
+@Table(name = "verification_session",
         indexes = {
                 @Index(name = "idx_verify_session_gether", columnList = "gether_id"),
                 @Index(name = "idx_verify_session_host", columnList = "user_id")
@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class VerifySession {
+public class VerificationSession {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

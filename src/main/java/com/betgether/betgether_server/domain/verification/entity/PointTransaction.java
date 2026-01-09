@@ -30,22 +30,17 @@ public class PointTransaction extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private Type type;
+    private PointTransactionType type;
 
     @Column(nullable = false)
     private Integer amount;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "session_id", nullable = false)
-    private VerifySession session;
+    private VerificationSession session;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    public enum Type {
-        BET,
-        SETTLED,
-        BONUS
-    }
 }

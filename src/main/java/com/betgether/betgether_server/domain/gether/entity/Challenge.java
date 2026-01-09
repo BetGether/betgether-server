@@ -30,21 +30,21 @@ public class Challenge {
     private Integer betPoint;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 5)
+    @Column(nullable = false, length = 10)
     @Builder.Default
-    private Status status = Status.CLOSED;
+    private ChallengeStatus status = ChallengeStatus.CLOSED;
 
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    public enum Status {
-        OPEN, CLOSED
-    }
-
-    public void update(String title, Integer betPoint, Status status) {
+    public void update(String title, Integer betPoint, ChallengeStatus status) {
         if (title != null) this.title = title;
         if (betPoint != null) this.betPoint = betPoint;
         if (status != null) this.status = status;
+    }
+
+    public void setGether(Gether gether) {
+        this.gether = gether;
     }
 }

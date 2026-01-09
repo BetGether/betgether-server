@@ -2,6 +2,8 @@ package com.betgether.betgether_server.domain.verification.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -18,6 +20,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+@EntityListeners(AuditingEntityListener.class)
 public class VerificationLog {
 
     @Id
@@ -30,7 +33,7 @@ public class VerificationLog {
     @Column(name = "session_id", nullable = false)
     private Long sessionId;
 
-
-    @Column(name = "verified_at", nullable = false)
+    @CreatedDate
+    @Column(name = "verified_at", updatable = false, nullable = false)
     private LocalDateTime verifiedAt;
 }

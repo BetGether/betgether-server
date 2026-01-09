@@ -1,17 +1,19 @@
 package com.betgether.betgether_server.domain.verification.service;
 
 import com.betgether.betgether_server.domain.gether.entity.Challenge;
+import com.betgether.betgether_server.domain.gether.entity.ChallengeStatus;
 import com.betgether.betgether_server.domain.gether.entity.Gether;
 import com.betgether.betgether_server.domain.gether.repository.ChallengeRepository;
 import com.betgether.betgether_server.domain.gether.repository.GetherRepository;
 import com.betgether.betgether_server.domain.gether.repository.ParticipationRepository;
 import com.betgether.betgether_server.domain.user.entity.User;
-import com.betgether.betgether_server.domain.user.respository.UserRepository;
+import com.betgether.betgether_server.domain.user.repository.UserRepository;
 import com.betgether.betgether_server.domain.verification.dto.response.VerifyScanResponse;
 import com.betgether.betgether_server.domain.verification.dto.response.VerifyStartHostResponse;
 import com.betgether.betgether_server.domain.verification.entity.PointTransaction;
+import com.betgether.betgether_server.domain.verification.entity.PointTransactionType;
 import com.betgether.betgether_server.domain.verification.entity.VerificationLog;
-import com.betgether.betgether_server.domain.verification.entity.VerifySession;
+import com.betgether.betgether_server.domain.verification.entity.VerificationSession;
 import com.betgether.betgether_server.domain.verification.repository.PointTransactionRepository;
 import com.betgether.betgether_server.domain.verification.repository.VerificationLogRepository;
 import com.betgether.betgether_server.domain.verification.repository.VerificationSessionRepository;
@@ -50,7 +52,7 @@ public class VerifyService {
         }
 
         Challenge challenge = challengeRepository
-                .findByGether_IdAndStatus(getherId, Challenge.Status.OPEN)
+                .findByGether_IdAndStatus(getherId, ChallengeStatus.OPEN)
                 .orElseThrow(() -> new IllegalStateException("진행 중인 챌린지가 없습니다."));
 
         sessionRepository.findFirstByGetherIdAndStatusOrderByCreatedAtDesc(getherId, "ACTIVE")
@@ -65,9 +67,10 @@ public class VerifyService {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime expiredAt = now.plusMinutes(3);
 
-        VerifySession session = VerifySession.builder()
+        VerificationSession session = VerificationSession.builder()
                 .hostUserId(hostUserId)
                 .getherId(getherId)
+                .challenge(challenge)
                 .token(token)
                 .betPoint(betPoint)
                 .status("ACTIVE")
@@ -76,7 +79,7 @@ public class VerifyService {
                 .build();
 
         sessionRepository.save(session);
-        List<Long> memberIds = participationRepository.findUser_IdsByGether_Id(getherId);
+        List<Long> memberIds = participationRepository.findUserIdsByGetherId(getherId);
 
         if (memberIds.isEmpty()) {
             throw new IllegalStateException("게더 멤버가 없읍니다.");
@@ -88,7 +91,7 @@ public class VerifyService {
         List<PointTransaction> debits = members.stream().map(u -> {
             u.addPoint(-betPoint);
             return PointTransaction.builder()
-                    .type(PointTransaction.Type.BET)
+                    .type(PointTransactionType.BET)
                     .amount(-betPoint)
                     .session(session)
                     .user(u)
@@ -105,7 +108,7 @@ public class VerifyService {
         if (!participationRepository.existsByUser_IdAndGether_Id(userId, getherId))
             throw new IllegalStateException("게더 멤버만 인증할 수 있습니다.");
 
-        VerifySession session = sessionRepository.findByToken(verifyToken)
+        VerificationSession session = sessionRepository.findByToken(verifyToken)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 토큰입니다."));
 
         if (!session.getGetherId().equals(getherId)) {
@@ -123,7 +126,7 @@ public class VerifyService {
 
         // OPEN 챌린지 조회
         Challenge challenge = challengeRepository
-                .findByGether_IdAndStatus(getherId, Challenge.Status.OPEN)
+                .findByGether_IdAndStatus(getherId, ChallengeStatus.OPEN)
                 .orElseThrow(() -> new IllegalStateException("진행 중인 챌린지가 없습니다."));
 
         // 중복 인증 방지 + 로그 저장
@@ -163,19 +166,19 @@ public class VerifyService {
     @Scheduled(fixedDelay = 10000)
     @Transactional
     public void settleExpiredSessions() {
-        List<VerifySession> expiredSessions = sessionRepository.findExpiredActiveSessions(LocalDateTime.now());
-        for (VerifySession session : expiredSessions) {
-            session.markClosed();
-
+        List<VerificationSession> expiredSessions = sessionRepository.findExpiredActiveSessions(LocalDateTime.now());
+        for (VerificationSession session : expiredSessions) {
             Challenge challenge = challengeRepository
-                    .findByGether_IdAndStatus(session.getGetherId(), Challenge.Status.OPEN)
+                    .findByGether_IdAndStatus(session.getGetherId(), ChallengeStatus.OPEN)
                     .orElseThrow(() -> new IllegalArgumentException("진행중인 챌린지 없음"));
-
             settleSession(session, challenge);
         }
     }
 
-    private void settleSession(VerifySession session, Challenge challenge) {
+    private void settleSession(VerificationSession session, Challenge challenge) {
+        int updated = sessionRepository.closeIfActive(session.getId());
+        if (updated == 0) return; // 이미 다른 트랜잭션이 닫았음 → 중복 정산 방지
+
         //중복 호출 방지
         if (!session.isActive()) {
             throw new IllegalStateException("이미 종료된 세션");
@@ -189,14 +192,8 @@ public class VerifyService {
         // scan 한 유저 목록
         List<Long> successUserIds = logRepository.findUser_IdsBySession_Id(session.getId());
 
-        if (successUserIds != null && session.getHostUserId() != null && !successUserIds.contains(session.getHostUserId())) {
-            successUserIds = new ArrayList<>(successUserIds);
-            successUserIds.add(session.getHostUserId());
-        }
-
-        if (successUserIds == null) {
-            successUserIds = List.of(session.getHostUserId());
-        }
+        if (successUserIds == null) successUserIds = new ArrayList<>();
+        if (session.getHostUserId() != null) successUserIds.add(session.getHostUserId());
 
         List<Long> winners = successUserIds.stream().distinct().sorted().toList();
         List<User> users = userRepository.findAllByIdInForUpdate(winners);
@@ -205,7 +202,8 @@ public class VerifyService {
         int winnerCount = users.size();
 
         if (winnerCount == 0) {
-            challenge.update(null, null, Challenge.Status.CLOSED);
+            challenge.update(null, null, ChallengeStatus.CLOSED);
+            return;
         }
         long base = totalPoint / winnerCount;
 
@@ -215,7 +213,7 @@ public class VerifyService {
             long payout = base + bonus;
             u.addPoint((int) payout);
             return PointTransaction.builder()
-                    .type(PointTransaction.Type.SETTLED)
+                    .type(PointTransactionType.SETTLED)
                     .amount((int) payout)
                     .session(session)
                     .user(u)
@@ -225,7 +223,7 @@ public class VerifyService {
         userRepository.saveAll(users);
         pointTransactionRepository.saveAll(credits);
 
-        challenge.update(null, null, Challenge.Status.CLOSED);
+        challenge.update(null, null, ChallengeStatus.CLOSED);
     }
 
     private static String generateToken() {

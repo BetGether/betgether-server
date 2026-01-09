@@ -1,4 +1,4 @@
-package com.betgether.betgether_server.domain.user.respository;
+package com.betgether.betgether_server.domain.user.repository;
 
 import com.betgether.betgether_server.domain.ranking.RankingItemView;
 import com.betgether.betgether_server.domain.user.entity.User;
@@ -46,11 +46,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
         """, nativeQuery = true)
     RankingItemView findMyRanking(@Param("userId") Long userId);
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("update User u set u.point = u.point + :delta where u.id in :userIds")
     int addPoint(@Param("userIds") List<Long> userIds, @Param("delta") int delta);
 
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("update User u set u.point = u.point - :delta where u.id in :userIds")
     int subPoint(@Param("userIds") List<Long> userIds, @Param("delta") int delta);
 
