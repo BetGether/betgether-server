@@ -17,7 +17,7 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
         g.imageUrl,
         (select cast(count(p3) as integer) from Participation p3 where p3.gether = g),
         p.joinedAt,
-        case 
+        case
             when c is null then null
             when exists (
                 select 1
@@ -39,7 +39,7 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
 
     @Query("""
         select p.user.id
-        from Participation p 
+        from Participation p
         where p.gether.id = :getherId
     """)
     List<Long> findUserIdsByGetherId(@Param("getherId") Long getherId);
