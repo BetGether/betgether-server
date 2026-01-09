@@ -1,6 +1,6 @@
 package com.betgether.betgether_server.domain.chat.config;
 
-import com.betgether.betgether_server.domain.chat.handler.HandshakeInterceptor;
+import com.betgether.betgether_server.domain.chat.handler.StompHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
@@ -13,12 +13,12 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
-    private final HandshakeInterceptor handshakeInterceptor;
+    private final StompHandler stompHandler;
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         // 인터셉터를 등록하여 메시지가 들어올 때 가로채도록 설정
-        registration.interceptors(handshakeInterceptor);
+        registration.interceptors(stompHandler);
     }
 
     // 엔드포인트 등록을 위한 설정
