@@ -73,7 +73,8 @@ public class VerifyService {
 
         String token = generateToken();
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime expiredAt = now.plusSeconds(1);
+        // todo : 인증 가능 시간 복구 -> 3분정도?
+        LocalDateTime expiredAt = now.plusSeconds(50);
 
 
         VerificationSession session = VerificationSession.builder()
