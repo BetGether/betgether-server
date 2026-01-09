@@ -17,7 +17,7 @@ import java.util.Date;
 @Getter
 public class JwtProvider {
     private final SecretKey key;
-    private final long expiryMillis = 1000L * 60 * 60; // 1h
+    private final long expiryMillis = 1000L * 60 * 60 * 24; // 1h
 
     public JwtProvider(@Value("${jwt.secret}") String secret) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));

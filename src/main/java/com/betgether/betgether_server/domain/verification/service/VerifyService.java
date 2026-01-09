@@ -2,6 +2,7 @@ package com.betgether.betgether_server.domain.verification.service;
 
 import com.betgether.betgether_server.domain.gether.entity.Challenge;
 import com.betgether.betgether_server.domain.gether.entity.Gether;
+import com.betgether.betgether_server.domain.gether.entity.Participation;
 import com.betgether.betgether_server.domain.gether.repository.ChallengeRepository;
 import com.betgether.betgether_server.domain.gether.repository.GetherRepository;
 import com.betgether.betgether_server.domain.gether.repository.ParticipationRepository;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +34,8 @@ public class VerifyService {
     private final ParticipationRepository participationRepository;
     private final ChallengeRepository challengeRepository;
 
+    private static final int bonusPoint = 50;
+
     @Transactional
     public VerifyStartHostResponse start(Long getherId, Long hostUserId) {
         Gether gether = getherRepository.findById(getherId)
@@ -40,11 +44,19 @@ public class VerifyService {
             throw new IllegalStateException("방장만 인증을 시작할 수 있음.");
         }
 
+        sessionRepository.findFirstByGetherIdAndStatusOrderByCreatedAtDesc(getherId, "ACTIVE")
+                .ifPresent(active -> {
+                    throw new IllegalStateException("이미 진행중인 인증 세션 존재");
+                });
+
         // OPEN 상태의 챌린지 조회
         Challenge challenge = challengeRepository
                 .findByGether_IdAndStatus(getherId, Challenge.Status.OPEN)
-                .orElseThrow(() -> new IllegalStateException("진행 중인 챌린지가 없습니다."));
+                .orElseThrow(() -> new IllegalStateException("진행 중인 세션 없습니다."));
 
+        // OPEN 인데 expiredAt 넘었으면 정산중일수도 -> CLOSED로 바꾸고 세션 생성
+
+        List<Participation>
         int betPoint = challenge.getBetPoint();
 
         String token = generateToken();

@@ -1,6 +1,7 @@
 package com.betgether.betgether_server.domain.verification.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -13,6 +14,10 @@ import java.time.LocalDateTime;
                 @Index(name = "idx_verification_log_user", columnList = "user_id"),
                 @Index(name = "idx_verification_log_session", columnList = "session_id")
         })
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class VerificationLog {
 
     @Id
@@ -30,15 +35,6 @@ public class VerificationLog {
 
     @Column(name = "verified_at", nullable = false)
     private LocalDateTime verifiedAt;
-
-    protected VerificationLog() {}
-
-    public VerificationLog(Long userId, Long sessionId, int pointEarned) {
-        this.userId = userId;
-        this.sessionId = sessionId;
-        this.pointEarned = pointEarned;
-        this.verifiedAt = LocalDateTime.now();
-    }
 
     public int getPointEarned() { return pointEarned; }
 }

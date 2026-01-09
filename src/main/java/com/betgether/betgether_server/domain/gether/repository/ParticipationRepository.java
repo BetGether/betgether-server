@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface ParticipationRepository extends JpaRepository<Participation, Long> {
 
@@ -35,7 +34,7 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
         from Participation p 
         where p.gether.id = :getherId
     """)
-    List<Long> findUserIdsByGetherId(@Param("getherId") Long getherId);
+    List<Long> findUser_IdsByGether_Id(@Param("getherId") Long getherId);
     boolean existsByUser_IdAndGether_Id(Long userId, Long getherId);
 
     long countByGether_Id(Long getherId);

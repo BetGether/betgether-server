@@ -1,7 +1,7 @@
 package com.betgether.betgether_server.domain.verification.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -15,6 +15,9 @@ import java.time.LocalDateTime;
                 @UniqueConstraint(name = "uk_verify_session_token", columnNames = "token")
         })
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class VerifySession {
 
     @Id
@@ -41,19 +44,6 @@ public class VerifySession {
 
     @Column(name = "expired_at", nullable = false)
     private LocalDateTime expiredAt;
-
-    protected VerifySession() {}
-
-    public VerifySession(Long hostUserId, Long getherId, String token, int betPoint,
-                         LocalDateTime createdAt, LocalDateTime expiredAt) {
-        this.hostUserId = hostUserId;
-        this.getherId = getherId;
-        this.token = token;
-        this.betPoint = betPoint;
-        this.status = "ACTIVE";
-        this.createdAt = createdAt;
-        this.expiredAt = expiredAt;
-    }
 
     public boolean isExpired(LocalDateTime now) {
         return now.isAfter(expiredAt);

@@ -2,7 +2,9 @@ package com.betgether.betgether_server.domain.user.respository;
 
 import com.betgether.betgether_server.domain.ranking.RankingItemView;
 import com.betgether.betgether_server.domain.user.entity.User;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -46,9 +48,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Modifying
     @Query("update User u set u.point = u.point + :delta where u.id in :userIds")
-    int bulkAddPoint(@Param("userIds") List<Long> userIds, @Param("delta") int delta);
+    int addPoint(@Param("userIds") List<Long> userIds, @Param("delta") int delta);
 
     @Modifying
     @Query("update User u set u.point = u.point - :delta where u.id in :userIds")
-    int bulkSubPoint(@Param("userIds") List<Long> userIds, @Param("delta") int delta);
+    int subPoint(@Param("userIds") List<Long> userIds, @Param("delta") int delta);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select u from User u where u.id in :ids")
+    List<User> findAllByIdInForUpdate(@Param("ids") List<Long> ids);
 }
