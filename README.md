@@ -1,3 +1,44 @@
+## 실시간 채팅 (Real-time Chat with STOMP)
+
+WebSocket과 STOMP 프로토콜을 활용하여 저지연(Low-Latency) 실시간 통신 환경을 구축하고, 인터셉터를 통해 보안성을 확보했습니다.
+
+### 기술 스택 및 전략
+* **Protocol**: STOMP over WebSocket
+* **Library**: Spring Messaging, SockJS (브라우저 호환성 확보)
+* **Auth**: 연결 시점에 JWT 기반 유저 식별 및 세션 관리
+
+### 주요 코드 설명
+
+#### WebSocket & Broker 설정 (`WebSocketConfig`)
+메시지 송수신 경로를 분리하고, 보안을 위한 인터셉터를 등록했습니다.
+```java
+@Override
+public void configureMessageBroker(MessageBrokerRegistry registry) {
+  registry.enableSimpleBroker("/sub"); // 구독 경로 (메시지 수신)
+  registry.setApplicationDestinationPrefixes("/pub"); // 송신 경로 (메시지 발송)
+}
+```
+#### STOMP 인터셉터 기반 인증 (StompHandler)
+웹소켓 연결(CONNECT) 시점에 클라이언트가 보낸 인증 정보를 가로채 세션에 저장함으로써, 이후 통신에서 별도의 인증 과정 없이 안전하게 유저를 식별합니다.
+```java
+if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+    String userIdStr = accessor.getFirstNativeHeader("userId"); // 헤더에서 유저 ID 추출
+    accessor.getSessionAttributes().put("userId", Long.parseLong(userIdStr)); // 세션 보관
+}
+```
+#### 메시지 라우팅 및 퍼시스턴스 (ChatController)
+송신된 메시지를 수신하여 DB에 영구 저장하고, 해당 방을 구독 중인 모든 유저에게 실시간으로 브로드캐스트합니다.
+```java
+@MessageMapping("/chat/message/{getherId}")
+public void sendMessage(@DestinationVariable Long getherId, @Payload ChatSendRequest request, SimpMessageHeaderAccessor headerAccessor) {
+  Long userId = (Long) headerAccessor.getSessionAttributes().get("userId"); // 세션에서 유저 식별
+  ChatSendResponse response = chatService.saveMessage(getherId, request, userId); // DB 저장
+  messagingTemplate.convertAndSend("/sub/chat/room/" + getherId, response); // 구독자에게 전파
+}
+```
+
+---
+
 # 도메인 : chat
 
 ## 이전 채팅 내역 조회
@@ -38,3 +79,4 @@ DB 주소, 계정 정보, JWT Secret Key 등 민감한 정보를 소스 코드�
 
 ### 📊 데이터베이스 설계 (ERD)
 ![Database ERD](./images/db_erd.png)
+
