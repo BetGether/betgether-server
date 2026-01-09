@@ -11,7 +11,14 @@ public interface VerificationLogRepository extends JpaRepository<VerificationLog
     boolean existsBySessionIdAndUserId(Long sessionId, Long userId);
 
     @Query("select v.userId from VerificationLog v where v.sessionId = :sessionId")
-    List<Long> findUserIdsBySessionId(@Param("sessionId") Long sessionId);
+    List<Long> findUser_IdsBySession_Id(@Param("sessionId") Long sessionId);
 
     long countBySessionId(Long sessionId);
+
+    @Query("""
+        select count(distinct v.userId)
+        from VerificationLog v
+        where v.sessionId = :sessionId
+    """)
+    long countDistinctUserIdBySessionId(@Param("sessionId") Long sessionId);
 }

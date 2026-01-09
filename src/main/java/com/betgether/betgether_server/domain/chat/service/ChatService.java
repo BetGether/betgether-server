@@ -7,7 +7,7 @@ import com.betgether.betgether_server.domain.chat.repository.ChatMessageReposito
 import com.betgether.betgether_server.domain.gether.entity.Gether;
 import com.betgether.betgether_server.domain.gether.repository.GetherRepository;
 import com.betgether.betgether_server.domain.user.entity.User;
-import com.betgether.betgether_server.domain.user.respository.UserRepository;
+import com.betgether.betgether_server.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;

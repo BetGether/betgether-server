@@ -1,12 +1,13 @@
 package com.betgether.betgether_server.domain.verification.entity;
 
+import com.betgether.betgether_server.domain.gether.entity.Challenge;
 import jakarta.persistence.*;
-import lombok.Getter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "verify_session",
+@Table(name = "verification_session",
         indexes = {
                 @Index(name = "idx_verify_session_gether", columnList = "gether_id"),
                 @Index(name = "idx_verify_session_host", columnList = "user_id")
@@ -15,8 +16,10 @@ import java.time.LocalDateTime;
                 @UniqueConstraint(name = "uk_verify_session_token", columnNames = "token")
         })
 @Getter
-public class VerifySession {
-
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
+public class VerificationSession {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -42,18 +45,9 @@ public class VerifySession {
     @Column(name = "expired_at", nullable = false)
     private LocalDateTime expiredAt;
 
-    protected VerifySession() {}
-
-    public VerifySession(Long hostUserId, Long getherId, String token, int betPoint,
-                         LocalDateTime createdAt, LocalDateTime expiredAt) {
-        this.hostUserId = hostUserId;
-        this.getherId = getherId;
-        this.token = token;
-        this.betPoint = betPoint;
-        this.status = "ACTIVE";
-        this.createdAt = createdAt;
-        this.expiredAt = expiredAt;
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "challenge_id", nullable = false)
+    private Challenge challenge;
 
     public boolean isExpired(LocalDateTime now) {
         return now.isAfter(expiredAt);
@@ -63,4 +57,5 @@ public class VerifySession {
 
     public boolean isActive() { return "ACTIVE".equals(this.status); }
 
+    public void markClosed() { this.status = "CLOSED"; }
 }

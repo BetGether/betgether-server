@@ -3,7 +3,7 @@ package com.betgether.betgether_server.domain.ranking.service;
 import com.betgether.betgether_server.domain.ranking.RankingItemView;
 import com.betgether.betgether_server.domain.ranking.dto.response.RankingItemResponse;
 import com.betgether.betgether_server.domain.ranking.dto.response.RankingResponse;
-import com.betgether.betgether_server.domain.user.respository.UserRepository;
+import com.betgether.betgether_server.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

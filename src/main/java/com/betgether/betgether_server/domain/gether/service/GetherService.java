@@ -5,13 +5,14 @@ import com.betgether.betgether_server.domain.gether.dto.request.GetherJoinCodeRe
 import com.betgether.betgether_server.domain.gether.dto.request.GetherUpdateRequest;
 import com.betgether.betgether_server.domain.gether.dto.response.*;
 import com.betgether.betgether_server.domain.gether.entity.Challenge;
+import com.betgether.betgether_server.domain.gether.entity.ChallengeStatus;
 import com.betgether.betgether_server.domain.gether.entity.Gether;
 import com.betgether.betgether_server.domain.gether.entity.Participation;
 import com.betgether.betgether_server.domain.gether.repository.ChallengeRepository;
 import com.betgether.betgether_server.domain.gether.repository.GetherRepository;
 import com.betgether.betgether_server.domain.gether.repository.ParticipationRepository;
 import com.betgether.betgether_server.domain.user.entity.User;
-import com.betgether.betgether_server.domain.user.respository.UserRepository;
+import com.betgether.betgether_server.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -94,8 +95,7 @@ public class GetherService {
                 .gether(gether)
                 .title(req.challenge().title())
                 .betPoint(req.challenge().betPoint())
-                .status(Challenge.Status.CLOSED)
-                .inCount(1)
+                .status(ChallengeStatus.CLOSED)
                 .build();
 
         challengeRepository.save(ch);

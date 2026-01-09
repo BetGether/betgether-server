@@ -3,7 +3,7 @@ package com.betgether.betgether_server.domain.auth.service;
 import com.betgether.betgether_server.domain.auth.dto.request.LoginRequest;
 import com.betgether.betgether_server.domain.auth.dto.response.LoginResponse;
 import com.betgether.betgether_server.domain.user.entity.User;
-import com.betgether.betgether_server.domain.user.respository.UserRepository;
+import com.betgether.betgether_server.domain.user.repository.UserRepository;
 import com.betgether.betgether_server.global.jwt.JwtProvider;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
