@@ -35,3 +35,6 @@ Slice<ChatMessage> findChatHistory(@Param("getherId") Long getherId,
 
 #### 환경 변수를 활용한 민감 정보 보호
 DB 주소, 계정 정보, JWT Secret Key 등 민감한 정보를 소스 코드에 포함하지 않고 시스템 환경 변수(`.bashrc`)를 통해 주입했습니다.
+
+### 📊 데이터베이스 설계 (ERD)
+![Database ERD](./images/db_erd.png)
