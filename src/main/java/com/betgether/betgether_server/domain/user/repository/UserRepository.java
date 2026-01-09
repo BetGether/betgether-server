@@ -18,32 +18,32 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByNickname(String nickname);
 
     @Query(value = """
-        SELECT t.rank AS rank, t.nickname AS nickname, t.point AS point
-        FROM (
-            SELECT
-                RANK() OVER (ORDER BY u.point DESC, u.id ASC) AS rank,
-                u.nickname AS nickname,
-                u.point AS point,
-                u.id AS user_id
-            FROM users u
-        ) t
-        ORDER BY t.rank ASC
-        LIMIT :limit
-        """, nativeQuery = true)
+    SELECT t.rnk AS rnk, t.nickname AS nickname, t.point AS point
+    FROM (
+        SELECT
+            RANK() OVER (ORDER BY u.point DESC, u.id ASC) AS rnk,
+            u.nickname AS nickname,
+            u.point AS point,
+            u.id AS user_id
+        FROM users u
+    ) t
+    ORDER BY t.rnk ASC
+    LIMIT :limit
+    """, nativeQuery = true)
     List<RankingItemView> findTopRanking(@Param("limit") int limit);
 
     @Query(value = """
-        SELECT t.rank AS rank, t.nickname AS nickname, t.point AS point
-        FROM (
-            SELECT
-                RANK() OVER (ORDER BY u.point DESC, u.id ASC) AS rank,
-                u.nickname AS nickname,
-                u.point AS point,
-                u.id AS user_id
-            FROM users u
-        ) t
-        WHERE t.user_id = :userId
-        """, nativeQuery = true)
+    SELECT t.rnk AS rnk, t.nickname AS nickname, t.point AS point
+    FROM (
+        SELECT
+            RANK() OVER (ORDER BY u.point DESC, u.id ASC) AS rnk,
+            u.nickname AS nickname,
+            u.point AS point,
+            u.id AS user_id
+        FROM users u
+    ) t
+    WHERE t.user_id = :userId
+    """, nativeQuery = true)
     RankingItemView findMyRanking(@Param("userId") Long userId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
