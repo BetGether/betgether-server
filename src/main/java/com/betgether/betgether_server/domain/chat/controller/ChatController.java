@@ -25,6 +25,7 @@ public class ChatController {
 
         // 1. JWT 등에서 추출한 유저 ID 가져오기 (인증 파트너와 상의 필요)
         Long userId = (Long) headerAccessor.getSessionAttributes().get("userId");
+//        Long userId = 1L;
 
         // 2. DB에 저장
         ChatSendResponse response = chatService.saveMessage(getherId, request, userId);
