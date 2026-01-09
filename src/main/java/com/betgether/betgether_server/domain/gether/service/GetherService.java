@@ -77,29 +77,24 @@ public class GetherService {
                 .isPublic(req.isPublic() == null || req.isPublic())
                 .inviteCode(generateInviteCode()).build();
 
-        getherRepository.save(gether);
-        try {
-            participationRepository.save(
-                    Participation.builder().user(host).gether(gether).build()); //호스트 추가
-        } catch (DataIntegrityViolationException ignored) { // 동시성 문제
-        }
-
-        if (req.challenge() == null) {
-            throw new IllegalArgumentException("challenge는 필수입니다.");
-        }
-        if (challengeRepository.existsByGether_Id(gether.getId())) {
-            throw new IllegalStateException("이미 챌린지가 존재합니다.");
-        }
-
         Challenge ch = Challenge.builder()
                 .gether(gether)
                 .title(req.challenge().title())
                 .betPoint(req.challenge().betPoint())
-                .status(ChallengeStatus.CLOSED)
+                .status(ChallengeStatus.OPEN)
                 .build();
 
-        challengeRepository.save(ch);
         gether.setChallenge(ch);
+        getherRepository.save(gether);
+
+        // 호스트도 해당 게더에 자동 참여 처리
+        try {
+            participationRepository.save(
+                    Participation.builder().user(host).gether(gether).build()
+            );
+        } catch (DataIntegrityViolationException ignored) {
+            // 동시성/중복 생성 등으로 이미 참여가 저장된 경우 무시
+        }
 
         return new GetherCreateResponse(gether.getId(), "CREATED");
     }
@@ -112,7 +107,7 @@ public class GetherService {
     public GetherUpdateResponse update(Long userId, Long getherId, GetherUpdateRequest req) {
         Gether gether = getherRepository.findById(getherId)
                 .orElseThrow(() -> new IllegalArgumentException("게더가 없음 getherId: " + getherId));
-        if (!gether.getHost().getId().equals(getherId)) {
+        if (!gether.getHost().getId().equals(userId)) {
             throw new IllegalStateException("호스트만 게더 수정 가능");
         }
 

@@ -65,7 +65,8 @@ public class VerifyService {
 
         String token = generateToken();
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime expiredAt = now.plusMinutes(3);
+        LocalDateTime expiredAt = now.plusSeconds(1);
+
 
         VerificationSession session = VerificationSession.builder()
                 .hostUserId(hostUserId)
@@ -202,7 +203,7 @@ public class VerifyService {
         int winnerCount = users.size();
 
         if (winnerCount == 0) {
-            challenge.update(null, null, ChallengeStatus.CLOSED);
+            challenge.update(null, null, ChallengeStatus.OPEN);
             return;
         }
         long base = totalPoint / winnerCount;
@@ -223,7 +224,7 @@ public class VerifyService {
         userRepository.saveAll(users);
         pointTransactionRepository.saveAll(credits);
 
-        challenge.update(null, null, ChallengeStatus.CLOSED);
+        challenge.update(null, null, ChallengeStatus.OPEN);
     }
 
     private static String generateToken() {
